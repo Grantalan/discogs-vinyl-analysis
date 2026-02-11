@@ -1,117 +1,94 @@
-library(ggvis)
-library(dplyr)
-if (FALSE) {
-  library(RSQLite)
-  library(dbplyr)
-}
-
-# Set up handles to database tables on app start
-# db <- src_sqlite("movies.db")
-db <- DBI::dbConnect(RSQLite::SQLite(), "movies.db")
-omdb <- tbl(db, "omdb")
-tomatoes <- tbl(db, "tomatoes")
-
-# Join tables, filtering out those with <10 reviews, and select specified columns
-all_movies <- inner_join(omdb, tomatoes, by = "ID") %>%
-  filter(Reviews >= 10) %>%
-  select(ID, imdbID, Title, Year, Rating_m = Rating.x, Runtime, Genre, Released,
-    Director, Writer, imdbRating, imdbVotes, Language, Country, Oscars,
-    Rating = Rating.y, Meter, Reviews, Fresh, Rotten, userMeter, userRating, userReviews,
-    BoxOffice, Production, Cast)
-
+# Clean up any NA values in rating
+vinyl_data <- vinyl_data |>
+  mutate(rating = coalesce(rating, 0)
+  )
 
 function(input, output, session) {
-
-  # Filter the movies, returning a data frame
-  movies <- reactive({
+  
+  # Filter the albums, returning a data frame
+  albums <- reactive({
     # Due to dplyr issue #318, we need temp variables for input values
-    reviews <- input$reviews
-    oscars <- input$oscars
-    minyear <- input$year[1]
-    maxyear <- input$year[2]
-    minboxoffice <- input$boxoffice[1] * 1e6
-    maxboxoffice <- input$boxoffice[2] * 1e6
-
+    min_rating <- input$min_rating[1]
+    min_price <- input$price_range[1]
+    max_price <- input$price_range[2]
+    min_want <- input$min_want[1]
+    min_have <- input$min_have[1]
+    
     # Apply filters
-    m <- all_movies %>%
+    m <- vinyl_data |> 
       filter(
-        Reviews >= reviews,
-        Oscars >= oscars,
-        Year >= minyear,
-        Year <= maxyear,
-        BoxOffice >= minboxoffice,
-        BoxOffice <= maxboxoffice
-      ) %>%
-      arrange(Oscars)
-
-    # Optional: filter by genre
-    if (input$genre != "All") {
-      genre <- paste0("%", input$genre, "%")
-      m <- m %>% filter(Genre %like% genre)
+        rating >= min_rating,
+        price >= min_price,
+        price <= max_price,
+        want >= min_want,
+        have >= min_have
+      )
+    
+    # Optional: filter by tier
+    if (input$tier != "All") {
+      m <- m |>  filter(tier == input$tier)
     }
-    # Optional: filter by director
-    if (!is.null(input$director) && input$director != "") {
-      director <- paste0("%", input$director, "%")
-      m <- m %>% filter(Director %like% director)
+    
+    # Optional: filter by album name
+    if (input$album_search != "") {
+      m <- m |> filter(grepl(input$album_search, album, ignore.case = TRUE))
     }
-    # Optional: filter by cast member
-    if (!is.null(input$cast) && input$cast != "") {
-      cast <- paste0("%", input$cast, "%")
-      m <- m %>% filter(Cast %like% cast)
-    }
-
-
-    m <- as.data.frame(m)
-
-    # Add column which says whether the movie won any Oscars
-    # Be a little careful in case we have a zero-row data frame
-    m$has_oscar <- character(nrow(m))
-    m$has_oscar[m$Oscars == 0] <- "No"
-    m$has_oscar[m$Oscars >= 1] <- "Yes"
+    
+    # Add unique ID column for hover logic
+    m$ID <- 1:nrow(m)
+    
+    # Add column with high value indicator for legend
+    m$high_value <- "No"
+    m$high_value[m$tier == "Top Rated"] <- "Yes"
+    m$high_value[m$tier == "Mid-Tier (Popular)"] <- "Yes"
+    
     m
   })
-
-  # Function for generating tooltip text
-  movie_tooltip <- function(x) {
+  
+  # Create function for generating tooltip text
+  album_tooltip <- function(x) {
     if (is.null(x)) return(NULL)
     if (is.null(x$ID)) return(NULL)
-
-    # Pick out the movie with this ID
-    all_movies <- isolate(movies())
-    movie <- all_movies[all_movies$ID == x$ID, ]
-
-    paste0("<b>", movie$Title, "</b><br>",
-      movie$Year, "<br>",
-      "$", format(movie$BoxOffice, big.mark = ",", scientific = FALSE)
+    
+    # Pick out the album with this ID
+    all_albums <- isolate(albums())
+    album <- all_albums[all_albums$ID == x$ID, ]
+    
+    paste0("<b>", album$album, "</b><br>",
+           "Price: $", album$price, "<br>",
+           "Rating: ", round(album$rating, 2), "<br>",
+           "Want/Have: ", album$want, "/", album$have, "<br>",
+           "Tier: ", album$tier
     )
   }
-
+  
   # A reactive expression with the ggvis plot
   vis <- reactive({
-    # Lables for axes
+    # Labels for axes
     xvar_name <- names(axis_vars)[axis_vars == input$xvar]
     yvar_name <- names(axis_vars)[axis_vars == input$yvar]
-
-    # Normally we could do something like props(x = ~BoxOffice, y = ~Reviews),
+    
+    # Normally we could do something like props(x = ~price, y = ~popularity),
     # but since the inputs are strings, we need to do a little more work.
     xvar <- prop("x", as.symbol(input$xvar))
     yvar <- prop("y", as.symbol(input$yvar))
-
-    movies %>%
-      ggvis(x = xvar, y = yvar) %>%
+    
+    albums |>  
+      ggvis(x = xvar, y = yvar) |> 
       layer_points(size := 50, size.hover := 200,
-        fillOpacity := 0.2, fillOpacity.hover := 0.5,
-        stroke = ~has_oscar, key := ~ID) %>%
-      add_tooltip(movie_tooltip, "hover") %>%
-      add_axis("x", title = xvar_name) %>%
-      add_axis("y", title = yvar_name) %>%
-      add_legend("stroke", title = "Won Oscar", values = c("Yes", "No")) %>%
+                   fillOpacity := 0.2, fillOpacity.hover := 0.5,
+                   stroke = ~high_value, key := ~ID) |> 
+      add_tooltip(album_tooltip, "hover") |> 
+      add_axis("x", title = xvar_name) |> 
+      add_axis("y", title = yvar_name) |> 
+      add_legend("stroke", title = "High Value Tier", values = c("Yes", "No")) |> 
       scale_nominal("stroke", domain = c("Yes", "No"),
-        range = c("orange", "#aaa")) %>%
+                    range = c("#FF1493", "#00FF7F")) |> 
       set_options(width = 500, height = 500)
   })
-
-  vis %>% bind_shiny("plot1")
-
-  output$n_movies <- renderText({ nrow(movies()) })
+  
+  vis |>  bind_shiny("plot1")
+  
+  output$n_albums <- renderText({ nrow(albums()) })
 }
+

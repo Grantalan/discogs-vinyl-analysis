@@ -1,4 +1,3 @@
-library(ggvis)
 
 # For dropdown menu
 actionLink <- function(inputId, ...) {
@@ -9,44 +8,40 @@ actionLink <- function(inputId, ...) {
 }
 
 fluidPage(
-  titlePanel("Movie explorer"),
+  tags$style(".ggvis-output.recalculating { --shiny-fade-opacity: 1; }"),
+  titlePanel("Vinyl Profitability Explorer"),
   fluidRow(
     column(3,
-      wellPanel(
-        h4("Filter"),
-        sliderInput("reviews", "Minimum number of reviews on Rotten Tomatoes",
-          10, 300, 80, step = 10),
-        sliderInput("year", "Year released", 1940, 2014, value = c(1970, 2014),
-          sep = ""),
-        sliderInput("oscars", "Minimum number of Oscar wins (all categories)",
-          0, 4, 0, step = 1),
-        sliderInput("boxoffice", "Dollars at Box Office (millions)",
-          0, 800, c(0, 800), step = 1),
-        selectInput("genre", "Genre (a movie can have multiple genres)",
-          c("All", "Action", "Adventure", "Animation", "Biography", "Comedy",
-            "Crime", "Documentary", "Drama", "Family", "Fantasy", "History",
-            "Horror", "Music", "Musical", "Mystery", "Romance", "Sci-Fi",
-            "Short", "Sport", "Thriller", "War", "Western")
-        ),
-        textInput("director", "Director name contains (e.g., Miyazaki)"),
-        textInput("cast", "Cast names contains (e.g. Tom Hanks)")
-      ),
-      wellPanel(
-        selectInput("xvar", "X-axis variable", axis_vars, selected = "Meter"),
-        selectInput("yvar", "Y-axis variable", axis_vars, selected = "Reviews"),
-        tags$small(paste0(
-          "Note: The Tomato Meter is the proportion of positive reviews",
-          " (as judged by the Rotten Tomatoes staff), and the Numeric rating is",
-          " a normalized 1-10 score of those reviews which have star ratings",
-          " (for example, 3 out of 4 stars)."
-        ))
-      )
+           wellPanel(
+             h4("Filter"),
+             sliderInput("min_rating", "Minimum Rating",
+                         0, 5, 0, step = 0.1),
+             sliderInput("price_range", "Price Range ($)",
+                         0, 200, c(0, 200), step = 5),
+             sliderInput("min_want", "Minimum Want Count",
+                         0, 1000, 0, step = 10),
+             sliderInput("min_have", "Minimum Have Count",
+                         0, 5000, 0, step = 100),
+             selectInput("tier", "Tier",
+                         c("All", "Top Rated", "Mid-Tier (Popular)", "Niche/Underground", "Low Priority")
+             ),
+             textInput("album_search", "Album name contains (e.g., Beatles)")
+           ),
+           wellPanel(
+             selectInput("xvar", "X-axis variable", axis_vars, selected = "price"),
+             selectInput("yvar", "Y-axis variable", axis_vars, selected = "popularity"),
+             tags$small(paste0(
+               "",
+               "",
+               ""
+             ))
+           )
     ),
     column(9,
-      ggvisOutput("plot1"),
-      wellPanel(
-        span("Number of movies selected:",
-          textOutput("n_movies")
+           ggvisOutput("plot1"),
+           wellPanel(
+             span("Number of albums selected:",
+                  textOutput("n_albums")
         )
       )
     )
