@@ -35,13 +35,20 @@ function(input, output, session) {
     }
     
     # Add unique ID column for hover logic
-    m$ID <- 1:nrow(m)
+    #m$ID <- 1:nrow(m)
+    
+    if (nrow(m) > 0) {
+      m$ID <- 1:nrow(m)
     
     # Add column with high value indicator for legend
     m$high_value <- "No"
     m$high_value[m$tier == "Top Rated"] <- "Yes"
     m$high_value[m$tier == "Mid-Tier (Popular)"] <- "Yes"
-    
+  } else {
+    m$ID <- integer(0)
+    m$high_value <- character(0)
+  }
+      
     m
   })
   
@@ -54,6 +61,7 @@ function(input, output, session) {
     all_albums <- isolate(albums())
     album <- all_albums[all_albums$ID == x$ID, ]
     
+    # Create text for hover tooltip
     paste0("<b>", album$album, "</b><br>",
            "Price: $", album$price, "<br>",
            "Rating: ", round(album$rating, 2), "<br>",

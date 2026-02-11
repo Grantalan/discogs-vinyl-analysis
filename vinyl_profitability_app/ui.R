@@ -25,7 +25,7 @@ fluidPage(
              selectInput("tier", "Tier",
                          c("All", "Top Rated", "Mid-Tier (Popular)", "Niche/Underground", "Low Priority")
              ),
-             textInput("album_search", "Album name contains (e.g., Beatles)")
+             textInput("album_search", "Album name contains (e.g. Beatles)")
            ),
            wellPanel(
              selectInput("xvar", "X-axis variable", axis_vars, selected = "price"),
