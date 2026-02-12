@@ -8,7 +8,19 @@ actionLink <- function(inputId, ...) {
 }
 
 fluidPage(
-  tags$style(".ggvis-output.recalculating { --shiny-fade-opacity: 1; }"),
+  theme = shinytheme("cyborg"),
+  tags$style("
+  .ggvis-output.recalculating { --shiny-fade-opacity: 1; }
+  .ggvis-tooltip { background-color: black !important; 
+                   color: white !important; 
+                   border: 2px solid white !important; }
+  .irs-bar { background: #FF1493 !important; border: none !important; }
+  .irs-handle { background: black !important; }
+  .irs-single, 
+  .irs-from, 
+  .irs-to { background: black !important; 
+            color: white !important; }
+             "),
   titlePanel("Vinyl Profitability Explorer"),
   fluidRow(
     column(3,

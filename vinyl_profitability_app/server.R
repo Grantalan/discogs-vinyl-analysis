@@ -87,9 +87,21 @@ function(input, output, session) {
                    fillOpacity := 0.2, fillOpacity.hover := 0.5,
                    stroke = ~high_value, key := ~ID) |> 
       add_tooltip(album_tooltip, "hover") |> 
-      add_axis("x", title = xvar_name) |> 
-      add_axis("y", title = yvar_name) |> 
-      add_legend("stroke", title = "High Value Tier", values = c("Yes", "No")) |> 
+      add_axis("x", title = xvar_name,
+               properties = axis_props(
+                 title = list(fill = "white"),
+                 labels = list(fill = "lightblue")
+               )) |> 
+      add_axis("y", title = yvar_name,
+               properties = axis_props(
+                 title = list(fill = "white"),
+                 labels = list(fill = "lightblue")
+               )) |> 
+      add_legend("stroke", title = "High Value Tier", values = c("Yes", "No"),
+                 properties = legend_props(
+                   title = list(fontSize = 12, fill = "white"),
+                   labels = list(fontSize = 11, fill = "lightblue")
+                 )) |> 
       scale_nominal("stroke", domain = c("Yes", "No"),
                     range = c("#FF1493", "#00FF7F")) |> 
       set_options(width = 500, height = 500)
