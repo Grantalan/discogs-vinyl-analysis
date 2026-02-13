@@ -10,16 +10,45 @@ actionLink <- function(inputId, ...) {
 fluidPage(
   theme = shinytheme("cyborg"),
   tags$style("
-  .ggvis-output.recalculating { --shiny-fade-opacity: 1; }
-  .ggvis-tooltip { background-color: black !important; 
-                   color: white !important; 
-                   border: 2px solid white !important; }
-  .irs-bar { background: #FF1493 !important; border: none !important; }
-  .irs-handle { background: black !important; }
+  .ggvis-output.recalculating {
+  --shiny-fade-opacity: 1; 
+  }
+  .ggvis-tooltip { 
+  background-color: black !important; 
+  color: white !important; 
+  border: 2px solid white !important; 
+  }
+  .irs-bar { 
+  background: #FF1493 !important; 
+  border: none !important; 
+  }
+  .irs-handle { 
+  background: black !important; 
+  }
   .irs-single, 
   .irs-from, 
-  .irs-to { background: black !important; 
-            color: white !important; }
+  .irs-to { 
+  background: black !important; 
+            color: white !important; 
+            }
+  .dataTables_length label,
+  .dataTables_filter label,
+  .dataTables_info,
+  .dataTables_paginate { 
+  color: white !important; 
+  }
+  .dataTables_length select,
+  .dataTables_filter input { 
+  color: white !important; 
+  background-color: #222 !important; 
+                             }
+  .nav-tabs li.active a { 
+  background-color: #FF1493 !important; 
+  border-color: #FF1493 !important; 
+  }
+  table.dataTable tbody tr:hover { 
+  background-color: #FF1493 !important; 
+  }
              "),
   titlePanel("Vinyl Profitability Explorer"),
   fluidRow(
@@ -50,12 +79,19 @@ fluidPage(
            )
     ),
     column(9,
-           ggvisOutput("plot1"),
-           wellPanel(
-             span("Number of albums selected:",
-                  textOutput("n_albums")
-        )
-      )
+           tabsetPanel(
+             tabPanel("Scatter Plot",
+                      ggvisOutput("plot1"),
+                      wellPanel(
+                        span("Number of albums selected:",
+                             textOutput("n_albums")
+                        )
+                      )
+             ),
+             tabPanel("Data Table",
+                      DTOutput("album_table")
+             )
+           )
     )
   )
 )

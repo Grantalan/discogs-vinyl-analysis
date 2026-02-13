@@ -1,6 +1,7 @@
 library(ggvis)
 library(dplyr)
 library(shinythemes)
+library(DT)
 
 # Read the vinyl data from CSV
 vinyl_data <- read.csv("discogs_vinyl_data_clean_new.csv")

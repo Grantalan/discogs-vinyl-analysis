@@ -39,16 +39,16 @@ function(input, output, session) {
     
     if (nrow(m) > 0) {
       m$ID <- 1:nrow(m)
-    
-    # Add column with high value indicator for legend
-    m$high_value <- "No"
-    m$high_value[m$tier == "Top Rated"] <- "Yes"
-    m$high_value[m$tier == "Mid-Tier (Popular)"] <- "Yes"
-  } else {
-    m$ID <- integer(0)
-    m$high_value <- character(0)
-  }
       
+      # Add column with high value indicator for legend
+      m$high_value <- "No"
+      m$high_value[m$tier == "Top Rated"] <- "Yes"
+      m$high_value[m$tier == "Mid-Tier (Popular)"] <- "Yes"
+    } else {
+      m$ID <- integer(0)
+      m$high_value <- character(0)
+    }
+    
     m
   })
   
@@ -110,5 +110,16 @@ function(input, output, session) {
   vis |>  bind_shiny("plot1")
   
   output$n_albums <- renderText({ nrow(albums()) })
+  
+  # Add data table in new tab
+  output$album_table <- renderDataTable({
+    albums() |>
+      select(album, price, rating, want, have, popularity, tier) |>
+      datatable(
+        colnames = c("Album", "Price ($)", "Rating", "Want", "Have", "Popularity", "Tier"),
+        rownames = FALSE
+      )
+    
+  })
 }
 
