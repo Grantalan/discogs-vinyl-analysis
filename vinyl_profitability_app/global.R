@@ -3,7 +3,7 @@ library(dplyr)
 library(shinythemes)
 
 # Read the vinyl data from CSV
-vinyl_data <- read.csv("discogs_vinyl_data_clean.csv")
+vinyl_data <- read.csv("discogs_vinyl_data_clean_new.csv")
 
 # Variables that can be put on the x and y axes
 axis_vars <- c(
