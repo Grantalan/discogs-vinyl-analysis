@@ -1,0 +1,31 @@
+---
+title: "discogs_exploratory_analysis"
+output: html_document
+date: "2026-02-14"
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+vinyl_data <- read.csv("data/discogs_vinyl_data_clean_new.csv")
+```
+
+```{r}
+ggplot(vinyl_data, aes(x = want, y = price)) +
+  geom_point() +
+  scale_y_log10() +
+  scale_y_log10()
+
+```
+
+```{r}
+vinyl_data |> summarise(cor(want, price))
+```
+```{r}
+cor.test(vinyl_data$popularity, vinyl_data$price)
+```
+
+
