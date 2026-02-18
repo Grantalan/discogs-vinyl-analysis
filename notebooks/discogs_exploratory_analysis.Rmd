@@ -10,13 +10,13 @@ library(tidyverse)
 
 
 ```{r}
-vinyl_data <- read.csv("data/discogs_vinyl_data_clean_new.csv")
+vinyl_data <- read.csv("../data/discogs_vinyl_data_clean_new.csv")
 ```
 
 ```{r}
 ggplot(vinyl_data, aes(x = want, y = price)) +
   geom_point() +
-  scale_y_log10() +
+  scale_x_log10() +
   scale_y_log10()
 
 ```

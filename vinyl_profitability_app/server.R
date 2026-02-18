@@ -34,9 +34,6 @@ function(input, output, session) {
       m <- m |> filter(grepl(input$album_search, album, ignore.case = TRUE))
     }
     
-    # Add unique ID column for hover logic
-    #m$ID <- 1:nrow(m)
-    
     if (nrow(m) > 0) {
       m$ID <- 1:nrow(m)
       
@@ -118,7 +115,9 @@ function(input, output, session) {
       datatable(
         colnames = c("Album", "Price ($)", "Rating", "Want", "Have", "Popularity", "Tier"),
         rownames = FALSE
-      )
+      ) |>
+      formatCurrency("price", currency = "$", digits = 2) |>
+      formatRound("popularity", digits = 3)
     
   })
 }
